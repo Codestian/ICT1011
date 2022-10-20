@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bluetooth_addresses",
+  "info": {
+    "singularName": "bluetooth-address",
+    "pluralName": "bluetooth-addresses",
+    "displayName": "Bluetooth Address",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "address": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}
