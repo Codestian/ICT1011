@@ -4,7 +4,8 @@
   "info": {
     "singularName": "room",
     "pluralName": "rooms",
-    "displayName": "Rooms"
+    "displayName": "Rooms",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -12,12 +13,14 @@
   "pluginOptions": {},
   "attributes": {
     "number": {
-      "type": "string",
+      "type": "integer",
       "required": true,
       "unique": true
     },
-    "type": {
-      "type": "string"
+    "availability": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::availability.availability"
     }
   }
 }
