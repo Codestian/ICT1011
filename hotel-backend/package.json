@@ -1,5 +1,5 @@
 {
-  "name": "my-project",
+  "name": "ICT1011",
   "private": true,
   "version": "0.1.0",
   "description": "A Strapi application",
@@ -18,7 +18,7 @@
     "better-sqlite3": "7.4.6"
   },
   "author": {
-    "name": "A Strapi developer"
+    "name": "Grp ???"
   },
   "strapi": {
     "uuid": "18549005-6aa0-4498-a06c-cc59dbb7c60f"
