@@ -1,16 +1,45 @@
 <html lang="en">
 <head>
+    <style>
+.center {
+  margin: auto;
+  width: 60%;
+  border: 3px solid #73AD21;
+  padding:10px;
+}
+
+input,select,p {
+    font-size: 200%;
+}
+</style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body>
-    <form action="/data" method = "POST">
-        <p>Name <input type = "text" name = "Name" /></p>
-        <p>City <input type = "text" name = "City" /></p>
-        <p>Country <input type = "text" name = "Country" /></p>
-        <p><input type = "submit" value = "Submit" /></p>
-    </form>
+<body >
+   
+    <div class="center">
+        <form action="/data" method = "POST" >
+            <p>Name <input type = "text" name = "Name" /></p>
+            <p>Phone Number <input type = "text" name = "PhoneNumber" /></p>
+            <p>Email<input type = "text" name = "Email" /></p>
+            <p>Hotel Room<select name="hotelRoom" id="rooms">
+                {% block content %}
+                {% for key,value in data.items() %}
+                <option value ={{key}}>{{key}},{{value}}</option>
+            {% endfor %}
+            {% endblock content %}
+            </select></p>
+            <p><input type = "submit" value = "Submit" /></p>
+        </form>
+        
+        
+    </div>
+   
+    
+    
 </body>
+
+
 </html>
