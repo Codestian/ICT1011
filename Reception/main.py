@@ -1,7 +1,11 @@
 from flask import Flask,render_template,request
 import urllib.request, json
 app = Flask(__name__)
+<<<<<<< HEAD
  
+=======
+ #ok
+>>>>>>> 9fd51b928f5780cf66857cc13a01bd9f25232b64
 @app.route("/")
 def hello_world():
     url = "http://localhost:1337/api/rooms"
