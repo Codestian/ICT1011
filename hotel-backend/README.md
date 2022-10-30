@@ -1,6 +1,6 @@
 # A simple hotel management system (Strapi Node.js)
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html) (CLI) which lets you scaffold and manage your project in seconds.
+Before running project, put data.db in the .tmp folder. It is a hidden folder, enable viewing hidden folders in Windows Explorer or create one in VSCode.
 
 ### `develop`
 

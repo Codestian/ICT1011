@@ -21,6 +21,11 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::availability.availability"
+    },
+    "type": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::type.type"
     }
   }
 }
