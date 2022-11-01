@@ -1,9 +1,14 @@
 from unittest import result
 from flask import Flask,render_template,request
 import urllib.request, json
+<<<<<<< HEAD
 import requests
+=======
+from keys import func1
+>>>>>>> 2c6c100dd685bbe9b64586b9304077b3a5eedbb8
 app = Flask(__name__)
- 
+
+
 @app.route("/")
 def hello_world():
     url = "http://localhost:1337/api/rooms?populate=*"
@@ -14,7 +19,10 @@ def hello_world():
     hotelInformation = {}
     idList = []
     for hotel in dict["data"]:
+<<<<<<< HEAD
         idList.append(hotel["id"])
+=======
+>>>>>>> 2c6c100dd685bbe9b64586b9304077b3a5eedbb8
         for key,value in hotel['availability'].items():
             if "status" in key:
                 if "vacant" in value.lower():
@@ -22,12 +30,19 @@ def hello_world():
                         hotelRoom.append((hotel["number"]))
                     for key,value in hotel["type"].items():
                         if "name" in key:
+<<<<<<< HEAD
                             hotelType.append(value)
         
     
     hotelInformation  = {hotelRoom[i]: hotelType[i] for i in range(len(hotelRoom))}
     
     return render_template("index.html",data = hotelInformation,data2=idList)
+=======
+                            hotelType.append(value)  
+    hotelInformation  = {hotelRoom[i]: hotelType[i] for i in range(len(hotelRoom))}
+    print(hotelInformation)
+    return render_template("index.html",data = hotelInformation)
+>>>>>>> 2c6c100dd685bbe9b64586b9304077b3a5eedbb8
 
  
 @app.route('/data/', methods = ['POST', 'GET'])
@@ -52,6 +67,7 @@ def data():
     if request.method == 'GET':
         return f"The URL /data is accessed directly. Try going to '/form' to submit form"
     if request.method == 'POST':
+<<<<<<< HEAD
         headers = {'Content-Type': 'application/json'}
         data = request.form.to_dict()
         Dict = {}
@@ -87,5 +103,11 @@ def booking():
         
         return(hello_world())
         
+=======
+        form_data = request.form
+        print(form_data)
+        return render_template('data.html',form_data = form_data)
+ 
+>>>>>>> 2c6c100dd685bbe9b64586b9304077b3a5eedbb8
 if __name__ == "__main__":
     app.run()
