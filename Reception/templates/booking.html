@@ -14,11 +14,23 @@
 </head>
 <body>
     <form class="border position-absolute top-50 start-50 translate-middle w-25 h-50" action="/booking" method = "PUT" >
-        <div class="d-flex flex-column mb-3">   
+        <div class="d-flex flex-column mb-3">  
+            <div class="h-150 d-inline-block p-2">
+                <label for="Guests" class="form-label">Guest</label>
+                <select class="form-select form-select-lg" aria-label=".form-select-sm example" name="Guest Name" id="guests">
+                {% block content %}
+                {% for key,value in data2.items() %}
+                
+                <option value ={{key}}{{value}}>{{value}}</option>
+                
+                {% endfor %}
+                
+                </select>
+            </div> 
             <div class="h-150 d-inline-block p-2">
                 <label for="HotelRoom" class="form-label">Hotel Room</label>
                 <select class="form-select form-select-lg" aria-label=".form-select-sm example" name="Hotel Room" id="rooms">
-                {% block content %}
+                
                 {% for key,value in data.items() %}
                 
                 <option value ={{key}}{{value}}>{{value}}</option>

@@ -1,7 +1,9 @@
 from unittest import result
+from datetime import datetime
 from flask import Flask,render_template,request
 import urllib.request, json
 import requests
+import re
 app = Flask(__name__)
 
 
@@ -35,6 +37,15 @@ def hello_world():
 def data():
     url = "http://localhost:1337/api/guests?populate=*"
     url2 = "http://localhost:1337/api/rooms?populate=*"
+    response2 = urllib.request.urlopen(url)
+    guests =response2.read()
+    dict = json.loads(guests)
+    guestInformationId = {}
+    guestList,guestID = [],[]
+    for guest in dict["data"]:
+        guestList.append(guest["fullName"])
+        guestID.append(guest["id"])
+    guestInformationId = {guestID[i]: guestList[i] for i in range(len(guestID))}
     response = urllib.request.urlopen(url2)
     informationId = {}
     hotelId, hotelRoom= [],[]
@@ -63,17 +74,21 @@ def data():
         # print(json.dumps(Dict))
         headers = {'Content-Type': 'application/json'}
         r = requests.post(url, data=json.dumps(Dict), headers=headers)
-        return render_template('booking.html',data=informationId)
+        return render_template('booking.html',data=informationId,data2=guestInformationId)
 
 
 @app.route('/booking/', methods = ['PUT','GET'])
 def booking():    
     if request.method == 'GET':
         data = request.full_path
-        
         hotelNumber = data[-3:]
         hotelID = data[-4]
-        
+        data2 = request.full_path.split('&')
+        data2 = data2[0].split("=")
+        guestID = int(re.search(r'\d+', data2[1]).group())
+        fullName = data2[1].replace(str(guestID), "")
+        print("guest",guestID)
+        print("name",fullName)
         Dict = {}
         Dict["data"] = {}
         Dict["data"]["number"] = hotelNumber
@@ -82,10 +97,22 @@ def booking():
         Dict["data"]["availability"]["status"] = "Occupied"
         print(Dict)
         url = "http://localhost:1337/api/rooms/"+hotelID+"?populate=*"
-        print(url)
+        url2 = "http://localhost:1337/api/bookings/?populate=*"
+        Dict2 = {}
+        Dict2["data"] = {}
+        Dict2["data"]["room"] ={}
+        Dict2["data"]["room"]["number"] =hotelNumber
+        Dict2["data"]["room"]["id"] = hotelID
+        date = datetime.today().strftime('%Y-%m-%d')
+        Dict2["data"]["guest"] = {}
+        Dict2["data"]["guest"]["id"] = guestID
+        Dict2["data"]["guest"]["fullName"] = fullName
+        Dict2["data"]["dateStart"] = date
+        Dict2["data"]["dateEnd"] = date
+        print(Dict2)
         headers = {'Content-Type': 'application/json'}
         r = requests.put(url, data=json.dumps(Dict), headers=headers)
-        
+        r2 = requests.post(url2,data=json.dumps(Dict2),headers=headers)
         return(hello_world())
         
 if __name__ == "__main__":
