@@ -76,7 +76,7 @@ def data():
         r = requests.post(url, data=json.dumps(Dict), headers=headers)
         return render_template('booking.html',data=informationId,data2=guestInformationId)
 
-
+    
 @app.route('/booking/', methods = ['PUT','GET'])
 def booking():    
     if request.method == 'GET':
