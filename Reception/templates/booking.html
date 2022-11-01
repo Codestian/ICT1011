@@ -13,19 +13,19 @@
     <title>Document</title>
 </head>
 <body>
-    <form class="border position-absolute top-50 start-50 translate-middle w-25 h-50" action="/data" method = "POST" >
+    <form class="border position-absolute top-50 start-50 translate-middle w-25 h-50" action="/booking" method = "PUT" >
         <div class="d-flex flex-column mb-3">   
-            <div class="p-2">
-                <label for="fullName" class="form-label">Name</label>
-                <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Guest Name">
-            </div>
-            <div class="p-2">
-                <label for="mobileNumber" class="form-label">Phone Number</label>
-                <input type="number" class="form-control" id="mobileNumber" placeholder="Guest Phone Number" name="mobileNumber">
-            </div>
-            <div class="p-2">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" placeholder="Guest Email" name="email">
+            <div class="h-150 d-inline-block p-2">
+                <label for="HotelRoom" class="form-label">Hotel Room</label>
+                <select class="form-select form-select-lg" aria-label=".form-select-sm example" name="Hotel Room" id="rooms">
+                {% block content %}
+                {% for key,value in data.items() %}
+                
+                <option value ={{key}}{{value}}>{{value}}</option>
+                
+                {% endfor %}
+                {% endblock content %}
+                </select>
             </div>
             <div class="d-grid gap-2 col-6 mx-auto p-2">
                 <button class="btn btn-primary btn-lg mt-3" type="submit">Submit form</button>
@@ -35,4 +35,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
 </body>
+
+
 </html>
