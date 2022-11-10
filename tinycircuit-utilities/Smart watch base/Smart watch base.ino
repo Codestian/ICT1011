@@ -23,6 +23,8 @@
 #define menu_debug_print true
 uint32_t doVibrate = 0;
 
+#define WIFI 8
+
 //#define ARDUINO_ARCH_SAMD
 
 #if defined (ARDUINO_ARCH_AVR)
@@ -69,6 +71,14 @@ BLEChar DSchar;
 int ANCSInitStep = -1;
 unsigned long ANCSInitRetry = 0;
 
+// Pyserial Part
+String incomingByte;
+char* token;
+char data[255];
+char FullName[16];
+char HotelNum[16];
+// End of Pyserial
+
 uint8_t ble_connection_state = false;
 uint8_t ble_connection_displayed_state = true;
 uint8_t TimeData[20];
@@ -90,15 +100,15 @@ unsigned long batteryUpdateInterval = 10000;
 unsigned long lastBatteryUpdate = 0;
 
 unsigned long sleepTimer = 0;
-int sleepTimeout = 5;
+int sleepTimeout = 60;
 
 uint8_t rewriteTime = true;
 
 uint8_t displayOn = 0;
 uint8_t buttonReleased = 1;
 uint8_t rewriteMenu = false;
-uint8_t amtNotifications = 0;
-uint8_t lastAmtNotificationsShown = -1;
+//uint8_t amtNotifications = 0;
+//uint8_t lastAmtNotificationsShown = -1;
 unsigned long mainDisplayUpdateInterval = 300;
 unsigned long lastMainDisplayUpdate = 0;
 
@@ -110,9 +120,70 @@ uint8_t vibratePinInactive = LOW;
 int brightness = 3;
 uint8_t lastSetBrightness = 100;
 
+const FONT_INFO& font8pt = liberationSansNarrow_8ptFontInfo;
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
 const FONT_INFO& font22pt = liberationSansNarrow_22ptFontInfo;
 
+int hh=0, mm=0, ss=0, ms=0; 
+bool timerStart = false;
+
+const char * getGuestName()
+{
+  /* to obtain guest name and return FIRST NAME ONLY */
+   if (SerialMonitorInterface.available()) {
+      incomingByte = SerialMonitorInterface.readStringUntil('\r');
+
+      delay(100);
+
+      int str_len = incomingByte.length() + 1;
+      incomingByte.toCharArray(data, str_len);
+
+      token = strtok(data,",");
+      strcpy(FullName, token);
+
+      token = strtok(NULL, ",");
+      strcpy(HotelNum, token);
+
+      delay(100);
+    }
+
+  return FullName;
+}
+
+const char * getRoomID()
+{
+  /* to obtain room ID from server and return ID */
+  if (SerialMonitorInterface.available()) {
+    incomingByte = SerialMonitorInterface.readStringUntil('\r');
+
+    delay(100);
+
+    int str_len = incomingByte.length() + 1;
+    incomingByte.toCharArray(data, str_len);
+
+    token = strtok(data,",");
+    strcpy(FullName, token);
+
+    token = strtok(NULL, ",");
+    strcpy(HotelNum, token);
+
+    delay(100);
+    }
+  return HotelNum;
+}
+
+/* WIFI password generator */
+const char * generateWIFI(){
+  /* Change to allowable characters */
+  const char possible[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!#$%&";
+  static char wifiPass[WIFI + 1];
+  for(int p = 0, i = 0; i < WIFI; i++){
+    int r = random(0, strlen(possible));
+    wifiPass[p++] = possible[r];
+  }
+  wifiPass[WIFI] = '\0';
+  return wifiPass;
+}
 
 void setup(void)
 {
@@ -132,9 +203,9 @@ void setup(void)
   pinMode(45, INPUT_PULLUP);
   pinMode(A4, INPUT);
   pinMode(2, INPUT);*/
-  RTCZ.begin();
-  RTCZ.setTime(16, 15, 1);//h,m,s
-  RTCZ.setDate(25, 7, 16);//d,m,y
+  //RTCZ.begin();
+  //RTCZ.setTime(0, 0, 0);//h,m,s
+  //RTCZ.setDate(25, 7, 16);//d,m,y
   //RTCZ.attachInterrupt(RTCwakeHandler);
   //RTCZ.enableAlarm(RTCZ.MATCH_HHMMSS);
   //RTCZ.setAlarmEpoch(RTCZ.getEpoch() + 1);
@@ -195,19 +266,19 @@ void loop() {
     return;
   }
 
-  amtNotifications = ANCSNotificationCount();
+  //amtNotifications = ANCSNotificationCount();
 
   if (newtime) {
     newtime = 0;
     newTimeData();
   }
 
-  if (ANCSNewNotification()) {
+  /*if (ANCSNewNotification()) {
     requestScreenOn();
     rewriteMenu = true;
     updateMainDisplay();
     doVibrate = millisOffset();
-  }
+  }*/
   if (doVibrate) {
     uint32_t td = millisOffset() - doVibrate;
     if (td > 0 && td < 100) {
@@ -233,7 +304,137 @@ void loop() {
 #endif
   }
   checkButtons();
+
+
 }
+
+//RTCZ.setTime(0, 0, 0);//h,m,s  
+
+void sWatchFunction()
+{
+  for(;;){
+  //RTCZ.setTime(0, 0, 0);//h,m,s  
+  hh = RTCZ.getHours();
+  mm = RTCZ.getMinutes();
+  ss = RTCZ.getSeconds();
+  //timerStart = true;
+
+  if(display.getButtons(TSButtonLowerRight)){ 
+  //digitalWrite(buzzer, HIGH);
+  //RTCZ.setTime(hh, mm, ss);
+  if (timerStart = false)
+  {
+    timerStart = true;
+    RTCZ.setTime(hh, mm, ss);
+    RTCZ.begin();
+  }
+  else
+  {
+    RTCZ.setTime(0, 0, 0);
+    RTCZ.begin();
+  }
+  //RTCZ.begin();
+  //RTCZ.setTime(hh, mm, ss);//h,m,s   
+  //timerStart = true;// Start stopwatch
+  //if (timerStart = true)
+  //{
+   // RTCZ.begin();
+  //}
+  /*if(ms>999)
+      {
+        ms=0; 
+        ss=ss+1;
+        if(ss>59){ss=0; mm=mm+1;}
+        if(mm>59){mm=0; hh=hh+1;}
+      }*/
+  delay(100);
+  }
+
+  if(display.getButtons(TSButtonLowerRight)){ 
+  //digitalWrite(buzzer, HIGH); 
+  if (timerStart = true)
+  {
+    break;
+    timerStart = false;
+    hh = RTCZ.getHours();
+    mm = RTCZ.getMinutes();
+    ss = RTCZ.getSeconds();
+  }  
+  //if (timerStart = false){ // Stop stopwatch
+
+    //RTCZ.begin();
+    //RTCZ.standbyMode(); 
+  delay(100);
+  //break;
+  //continue;
+  }
+
+  if(display.getButtons(TSButtonLowerLeft)){ 
+  //digitalWrite(buzzer, HIGH);   
+  timerStart = false;
+  //ss=0, mm=0, hh=0; // Reset stopwatch 
+  RTCZ.setTime(0, 0, 0);
+  delay(100);
+  //break;
+  //continue;
+  }
+
+
+  display.setFont(font22pt);
+  display.setCursor(10, 26);
+  display.print((hh/10)%10);
+  display.print(hh%10);
+  display.print(":");
+  display.print((mm/10)%10);
+  display.print(mm%10);
+  display.print(":");
+  display.print((ss/10)%10);
+  display.print(ss%10);
+  /*printHour(RTCZ.getHours());
+  display.setFont(font22pt);
+  display.setCursor(31, 26);
+  display.print(":");
+  printMinute(RTCZ.getMinutes());
+  display.setCursor(61, 26);
+  display.print(":");
+  printSec(RTCZ.getSeconds());*/
+  display.setFont(font10pt);
+  //display.println();
+  display.setCursor(70, menuTextY[3]);
+  display.print("Stop");
+  display.setCursor(0, menuTextY[3]);
+  display.print("Start");
+  //delay(1000);
+  }
+}
+
+
+
+/*void printHour() {
+  display.setFont(font22pt);
+  display.setCursor(5, 26);
+  display.print("00");
+}
+
+void printMinute() {
+  display.setFont(font22pt);
+  display.setCursor(36, 26);
+  display.print("00");
+}
+
+void printSec() {
+  display.setFont(font22pt);
+  display.setCursor(66, 26);
+  for (int i = 0; i < 60; i++){
+    if (i < 10){
+      display.print("0");
+      display.print(i);
+    }
+    else
+    display.print(i);
+  }
+  display.print("00");
+}*/
 
 int requestScreenOn() {
   sleepTimer = millisOffset();

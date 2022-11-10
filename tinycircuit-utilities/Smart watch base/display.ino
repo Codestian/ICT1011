@@ -19,9 +19,9 @@ const uint8_t clearButton = TSButtonLowerRight;
 void buttonPress(uint8_t buttons) {
   if (currentDisplayState == displayStateHome) {
     if (buttons == viewButton) {
-      menuHandler = viewNotifications;
+      menuHandler = viewInformation;
       menuHandler(0);
-    } else if (buttons == menuButton) {
+    } else if (buttons == selectButton) {
       menuHandler = viewMenu;
       menuHandler(0);
     }
@@ -36,8 +36,39 @@ void buttonPress(uint8_t buttons) {
   }
 }
 
-void viewNotifications(uint8_t button) {
-  if (!button) {
+void viewInformation(uint8_t button) 
+{
+  currentDisplayState = displayStateMenu;
+  display.clearWindow(0, 12, 96, 64);
+  display.setCursor(0, 10);
+  display.setFont(font10pt);
+  display.print(getGuestName());
+  display.setCursor(0, 22);
+  display.setFont(font10pt);  
+  display.print("Hotel WIFI");
+  display.setCursor(0, 32);
+  display.setFont(font10pt);  
+  display.print("SSID: H_81_Public");
+  display.setCursor(0, 42);
+  display.setFont(font10pt);  
+  display.print("Pswd: ");
+  display.print(generateWIFI());
+
+  
+  /* Display Back Button */
+  char backStr[] = ">";
+  int Xpos = 95 - display.getPrintWidth(backStr);
+  display.setCursor(Xpos, menuTextY[3]);
+  display.print(backStr);
+
+  /* go back to home screen */
+  if (button == viewButton) 
+  { 
+    currentDisplayState = displayStateHome;
+    initHomeScreen();
+  }
+
+  /*if (!button) {
     if (menu_debug_print)SerialMonitorInterface.println("viewNotificationsInit");
     currentDisplayState = displayStateMenu;
     display.clearWindow(0, 12, 96, 64);
@@ -97,22 +128,22 @@ void viewNotifications(uint8_t button) {
       currentDisplayState = displayStateHome;
       initHomeScreen();
     }
-  }
+  }*/
 }
 
 
 void initHomeScreen() {
   display.clearWindow(0, 12, 96, 64);
-  rewriteTime = true;
-  rewriteMenu = true;
+  //rewriteTime = true;
+  //rewriteMenu = true;
   updateMainDisplay();
 }
 
-uint8_t lastDisplayedDay = -1;
-uint8_t lastDisplayedMonth = -1;
-uint8_t lastDisplayedYear = -1;
+//uint8_t lastDisplayedDay = -1;
+//uint8_t lastDisplayedMonth = -1;
+//uint8_t lastDisplayedYear = -1;
 
-void updateDateDisplay() {
+/*void updateDateDisplay() {
 #if defined (ARDUINO_ARCH_AVR)
   int currentDay = day();
   int currentMonth = month();
@@ -152,36 +183,39 @@ void updateDateDisplay() {
 #endif
   ble_connection_displayed_state = ~ble_connection_state;
   updateBLEstatusDisplay();
-}
+}*/
 
 void updateMainDisplay() {
   if (lastSetBrightness != brightness) {
     display.setBrightness(brightness);
     lastSetBrightness = brightness;
   }
-  updateDateDisplay();
-  updateBLEstatusDisplay();
+  //updateDateDisplay();
+  //updateBLEstatusDisplay();
   displayBattery();
   if (currentDisplayState == displayStateHome) {
-    updateTimeDisplay();
-    if (rewriteMenu || lastAmtNotificationsShown != amtNotifications) {
-      lastAmtNotificationsShown = amtNotifications;
+    //updateTimeDisplay();
+    //if (rewriteMenu /*|| lastAmtNotificationsShown != amtNotifications*/) {
+      //lastAmtNotificationsShown = amtNotifications;
       display.setFont(font10pt);
       display.clearWindow(0, menuTextY[2], 96, 13);
-      if (amtNotifications) {
-        int printPos = 48 - (display.getPrintWidth(ANCSNotificationTitle()) / 2);
-        if (printPos < 0)printPos = 0;
-        display.setCursor(printPos, menuTextY[2]);
-        display.print(ANCSNotificationTitle());
-      }
+      //if (amtNotifications) {
+      int printPos = 28;
+      //if (printPos < 0)printPos = 0;
+      display.setCursor(printPos, 14);
+      display.print("Hotel 81");
+      display.setCursor(printPos, 24);
+      display.print("Room ");
+      display.print(getRoomID());
+      //}
       display.setCursor(0, menuTextY[3]);
       display.print(F("< Menu          "));
-      char viewStr[] = "View >";
+      char viewStr[] = "Info >";
       int Xpos = 95 - display.getPrintWidth(viewStr);
       display.setCursor(Xpos, menuTextY[3]);
       display.print(viewStr);
       rewriteMenu = false;
-    }
+    //}
   }
   lastMainDisplayUpdate = millisOffset();
 }
@@ -192,7 +226,7 @@ uint8_t lastHourDisplayed = -1;
 uint8_t lastMinuteDisplayed = -1;
 uint8_t lastSecondDisplayed = -1;
 
-void updateTimeDisplay() {
+/*void updateTimeDisplay() {
   int currentHour, currentMinute, currentSecond;
 #if defined (ARDUINO_ARCH_AVR)
   currentHour = hour();
@@ -236,7 +270,7 @@ void updateTimeDisplay() {
       display.print(F("PM"));
       display.fontColor(defaultFontColor, defaultFontBG);
     }
-  }
+  
 
   if (rewriteTime || lastMinuteDisplayed != currentMinute) {
     display.setFont(font22pt);
@@ -257,9 +291,9 @@ void updateTimeDisplay() {
     display.print(lastSecondDisplayed);
   }
   rewriteTime = false;
-}
+}*/
 
-void updateBLEstatusDisplay() {
+/*void updateBLEstatusDisplay() {
   if (ble_connection_state == ble_connection_displayed_state)
     return;
   ble_connection_displayed_state = ble_connection_state;
@@ -274,7 +308,7 @@ void updateBLEstatusDisplay() {
   display.drawLine(x + s, y + s, x - s, y - s, color);
   display.drawLine(x, y + s + s, x + s, y + s, color);
   display.drawLine(x, y - s - s, x + s, y - s, color);
-}
+}*/
 
 void displayBattery() {
   int result = 0;
@@ -341,10 +375,10 @@ void displayBattery() {
   while (ADC->STATUS.bit.SYNCBUSY == 1);
   SYSCTRL->VREF.reg &= ~SYSCTRL_VREF_BGOUTEN;
   result = (((1100L * 1024L) / valueRead) + 5L) / 10L;
-  uint8_t x = 70;
+  uint8_t x = 33;
   uint8_t y = 3;
   uint8_t height = 5;
-  uint8_t length = 20;
+  uint8_t length = 30;
   uint8_t red, green;
   if (result > 325) {
     red = 0;

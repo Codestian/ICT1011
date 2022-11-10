@@ -44,50 +44,36 @@ void newMenu(int8_t newIndex) {
 }
 
 //static const char PROGMEM mainMenuStrings0[] = "Set date/time";
-//static const char PROGMEM mainMenuStrings1[] = "Set auto off";
-//static const char PROGMEM mainMenuStrings2[] = "Set brightness";
-static const char PROGMEM mainMenuStrings0[] = "Settings";
-static const char PROGMEM mainMenuStrings1[] = "Bus Timing";
+static const char PROGMEM mainMenuStrings0[] = "Set auto off";
+static const char PROGMEM mainMenuStrings1[] = "Set brightness";
+static const char PROGMEM mainMenuStrings2[] = "Timer";
+static const char PROGMEM mainMenuStrings3[] = "Stopwatch";
 
 static const char* const PROGMEM mainMenuStrings[] =
 {
   mainMenuStrings0,
   mainMenuStrings1,
+  mainMenuStrings2,
+  mainMenuStrings3,
+  //mainMenuStrings4,
 };
 
 const menu_info mainMenuInfo =
 {
-  2,
+  4,
   mainMenuStrings,
   mainMenu,
 };
 
-static const char PROGMEM mainSettingsStrings0[] = "Set date/time";
-static const char PROGMEM mainSettingsStrings1[] = "Set auto off";
-static const char PROGMEM mainSettingsStrings2[] = "Set brightness";
 
-static const char* const PROGMEM mainSettingsStrings[] = 
-{
-  mainSettingsStrings0,
-  mainSettingsStrings1,
-  mainSettingsStrings2,
-};
-
-const menu_info mainSettingsInfo = 
-{
-  3,
-  mainSettingsStrings,
-  mainSettings,
-};
-
-static const char PROGMEM dateTimeMenuStrings0[] = "Set Year";
+/*static const char PROGMEM dateTimeMenuStrings0[] = "Set Year";
 static const char PROGMEM dateTimeMenuStrings1[] = "Set Month";
 static const char PROGMEM dateTimeMenuStrings2[] = "Set Day";
 static const char PROGMEM dateTimeMenuStrings3[] = "Set Hour";
 static const char PROGMEM dateTimeMenuStrings4[] = "Set Minute";
-static const char PROGMEM dateTimeMenuStrings5[] = "Set Second";
+static const char PROGMEM dateTimeMenuStrings5[] = "Set Second";*/
 
-static const char* const PROGMEM dateTimeMenuStrings[] =
+/*static const char* const PROGMEM dateTimeMenuStrings[] =
 {
   dateTimeMenuStrings0,
   dateTimeMenuStrings1,
@@ -95,19 +81,18 @@ static const char* const PROGMEM dateTimeMenuStrings[] =
   dateTimeMenuStrings3,
   dateTimeMenuStrings4,
   dateTimeMenuStrings5,
-};
+};*/
 
-const menu_info dateTimeMenuInfo =
+/*const menu_info dateTimeMenuInfo =
 {
   6,
   dateTimeMenuStrings,
   dateTimeMenu,
-};
+};*/
 
-const menu_info menuList[] = {mainMenuInfo, mainSettingsInfo, dateTimeMenuInfo};
+const menu_info menuList[] = {mainMenuInfo, /*dateTimeMenuInfo*/};
 #define mainMenuIndex 0
-#define mainSettingsIndex 1
-#define dateTimeMenuIndex 2
+//#define dateTimeMenuIndex 1
 
 int currentVal = 0;
 int digits[4];
@@ -115,6 +100,20 @@ int currentDigit = 0;
 int maxDigit = 4;
 int *originalVal;
 void (*editIntCallBack)() = NULL;
+
+uint8_t timeMenu(uint8_t button)
+{
+    display.clearWindow(0, 12, 96, 64);
+    display.setFont(font10pt);
+    display.fontColor(defaultFontColor, defaultFontBG);
+    display.setCursor(0, menuTextY[0]);
+    display.print(F("< back"));
+
+    if (button == backButton){
+    viewMenu(backButton);
+    return 1;
+    }
+}
 
 uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
@@ -184,37 +183,37 @@ uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 }
 
 void mainMenu(uint8_t selection) {
-  if (menu_debug_print)SerialMonitorInterface.println("mainSettingsHandler");
-  if (selection == 0) {
-    newMenu(mainSettingsIndex);
-  }
-  if (selection == 1) {
-    display.write('T');
-  }
-}
-
-void mainSettings(uint8_t selection) {
-  if (menu_debug_print)SerialMonitorInterface.println("mainSettingsHandler");
-  if (selection == 0) {
+  if (menu_debug_print)SerialMonitorInterface.println("mainMenuHandler");
+  /*if (selection == 0) {
     newMenu(dateTimeMenuIndex);
+  }*/
+  if (selection == 0) {
+    char buffer[20];
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
+    editInt(0, &sleepTimeout, buffer, NULL);
   }
   if (selection == 1) {
     char buffer[20];
-    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainSettingsIndex].strings[selection])));
-    editInt(0, &sleepTimeout, buffer, NULL);
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
+    editInt(0, &brightness, buffer, NULL);
   }
   if (selection == 2) {
     char buffer[20];
-    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainSettingsIndex].strings[selection])));
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
     editInt(0, &brightness, buffer, NULL);
+  }
+  if (selection == 3) {
+    char buffer[20];
+    timeMenu(0);
+    sWatchFunction();
   }
 }
 
 
-uint8_t dateTimeSelection = 0;
-int dateTimeVariable = 0;
+//uint8_t dateTimeSelection = 0;
+//int dateTimeVariable = 0;
 
-void saveChangeCallback() {
+/*void saveChangeCallback() {
 #if defined (ARDUINO_ARCH_AVR)
   int timeData[] = {year(), month(), day(), hour(), minute(), second()};
   timeData[dateTimeSelection] = dateTimeVariable;
@@ -245,7 +244,7 @@ void dateTimeMenu(uint8_t selection) {
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[dateTimeMenuIndex].strings[selection])));
     editInt(0, &dateTimeVariable, buffer, saveChangeCallback);
   }
-}
+}*/
 
 void viewMenu(uint8_t button) {
   if (menu_debug_print)SerialMonitorInterface.print("viewMenu ");
