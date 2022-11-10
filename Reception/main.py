@@ -4,6 +4,9 @@ from flask import Flask,render_template,request
 import urllib.request, json
 import requests
 import re
+import serial
+import time
+
 app = Flask(__name__)
 
 
@@ -89,6 +92,7 @@ def booking():
         fullName = data2[1].replace(str(guestID), "")
         print("guest",guestID)
         print("name",fullName)
+        print("hotelNumber",hotelNumber)
         Dict = {}
         Dict["data"] = {}
         Dict["data"]["number"] = hotelNumber
@@ -110,6 +114,15 @@ def booking():
         Dict2["data"]["dateStart"] = date
         Dict2["data"]["dateEnd"] = date
         print(Dict2)
+        Arduino_data = fullName + "," + hotelNumber + '\r'
+        print(Arduino_data)
+        #  CHANGE THE 'COM' NUMBER TO THE COM PORT CONNECTED TO YOUR ARDUINO.
+        with serial.Serial('COM5', 9800, timeout=1) as ser:
+            time.sleep(0.5)
+            print("Write")
+            ser.write(Arduino_data.encode())   # send the pyte string 'H'
+            time.sleep(0.5)   # wait 0.5 seconds
+
         headers = {'Content-Type': 'application/json'}
         r = requests.put(url, data=json.dumps(Dict), headers=headers)
         r2 = requests.post(url2,data=json.dumps(Dict2),headers=headers)
