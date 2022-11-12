@@ -5,6 +5,7 @@ import urllib.request, json
 import requests
 import re
 import serial
+import serial.tools.list_ports as list_ports
 import time
 
 app = Flask(__name__)
@@ -90,6 +91,7 @@ def booking():
         data2 = data2[0].split("=")
         guestID = int(re.search(r'\d+', data2[1]).group())
         fullName = data2[1].replace(str(guestID), "")
+        arduino_ports = []
         print("guest",guestID)
         print("name",fullName)
         print("hotelNumber",hotelNumber)
@@ -117,7 +119,13 @@ def booking():
         Arduino_data = fullName + "," + hotelNumber + '\r'
         print(Arduino_data)
         #  CHANGE THE 'COM' NUMBER TO THE COM PORT CONNECTED TO YOUR ARDUINO.
-        with serial.Serial('COM5', 9800, timeout=1) as ser:
+        for i, p in enumerate(list_ports.comports()):
+            print(f'{i+1}. device={p.device} name={p.name} description={p.description} manufacturer={p.manufacturer}')
+            # for k,v in vars(p).items():
+            #     print(k,v)
+            arduino_ports.append(p)
+        port = arduino_ports[0].device
+        with serial.Serial(port, 9800, timeout=1) as ser:
             time.sleep(0.5)
             print("Write")
             ser.write(Arduino_data.encode())   # send the pyte string 'H'
