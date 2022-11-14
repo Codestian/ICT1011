@@ -79,7 +79,6 @@ int timerMM = 50, timerSS = 0;
 
 void setup() {
   SerialMonitorInterface.begin(9600);
-  while (!SerialMonitorInterface); //This line will block until a serial monitor is opened with TinyScreen+!
   BLEsetup();
   Wire.begin();
   display.begin();
