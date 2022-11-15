@@ -1,16 +1,8 @@
 //-------------------------------------------------------------------------------
-//  TinyCircuits ST BLE TinyShield UART Example Sketch
-//  Last Updated 2 March 2016
-//
-//  This demo sets up the BlueNRG-MS chipset of the ST BLE module for compatiblity 
-//  with Nordic's virtual UART connection, and can pass data between the Arduino
-//  serial monitor and Nordic nRF UART V2.0 app or another compatible BLE
-//  terminal. This example is written specifically to be fairly code compatible
-//  with the Nordic NRF8001 example, with a replacement UART.ino file with
-//  'aci_loop' and 'BLEsetup' functions to allow easy replacement. 
-//
-//  Written by Ben Rose, TinyCircuits http://tinycircuits.com
-//
+// Hotel BLE Keyless System
+// This is just the key for the hotel guests and employees.
+// This code allows the watch to display time,date and day set by RTC.
+// It also fetches the Guest Name and their respective room ID from the backend strapi server.
 //-------------------------------------------------------------------------------
 
 
@@ -32,12 +24,7 @@ TinyScreen display = TinyScreen(TinyScreenDefault);
 #define BLE_DEBUG true
 #endif
 
-#if defined (ARDUINO_ARCH_AVR)
-#define SerialMonitorInterface Serial
-#elif defined(ARDUINO_ARCH_SAMD)
 #define SerialMonitorInterface SerialUSB
-#endif
-
 
 uint8_t ble_rx_buffer[21];
 uint8_t ble_rx_buffer_len = 0;
@@ -45,8 +32,7 @@ uint8_t ble_connection_state = false;
 #define PIPE_UART_OVER_BTLE_UART_TX_TX 0
 
 uint8_t menuTextY[4] = {12, 25, 38, 51};
-
-uint8_t rewriteMenu = false;
+uint8_t timeY = 14;
 
 const FONT_INFO& font8pt = liberationSansNarrow_8ptFontInfo;
 const FONT_INFO& font10pt = thinPixel7_10ptFontInfo;
@@ -58,14 +44,21 @@ uint8_t defaultFontBG = TS_8b_Black;
 uint8_t inactiveFontColor = TS_8b_Gray;
 uint8_t inactiveFontBG = TS_8b_Black;
 
-int brightness = 3;
+int brightness = 5;
 uint8_t lastSetBrightness = 100;
+
 unsigned long millisOffsetCount = 0;
-unsigned long lastMainDisplayUpdate = 0;
-int sleepTimeout = 60;
-uint8_t displayOn = 0;
+
 unsigned long sleepTimer = 0;
+int sleepTimeout = 60;
+
+uint8_t rewriteTime = true;
+
+uint8_t displayOn = 0;
 uint8_t buttonReleased = 1;
+uint8_t rewriteMenu = false;
+unsigned long lastMainDisplayUpdate = 0;
+unsigned long mainDisplayUpdateInterval = 300;
 
 // Pyserial Part
 String incomingByte;
@@ -75,17 +68,29 @@ char FullName[16];
 char HotelNum[16];
 // End of Pyserial
 
-int hh, mm, ss;
-int timerMM = 50, timerSS = 0;
+uint8_t TimeData[20];
+uint8_t newtime= 0;
 
-void setup() {
-  SerialMonitorInterface.begin(9600);
-  BLEsetup();
+
+
+void setup() 
+{
+  RTCZ.begin();
+  RTCZ.setTime(9, 50, 0);//h,m,s
+  RTCZ.setDate(24, 11, 22);//d,m,y
+
   Wire.begin();
+  SerialMonitorInterface.begin(9600);
   display.begin();
   display.setFlip(true);
   initHomeScreen();
   requestScreenOn();
+  BLEsetup();
+}
+
+uint32_t millisOffset() 
+{
+  return (millisOffsetCount * 1000ul) + millis();
 }
 
 const char * getGuestName()
@@ -145,15 +150,10 @@ const char * generateWIFI(){
   return wifiPass;
 }
 
-uint32_t millisOffset() {
-#if defined (ARDUINO_ARCH_AVR)
-  return millis();
-#elif defined(ARDUINO_ARCH_SAMD)
-  return (millisOffsetCount * 1000ul) + millis();
-#endif
-}
 
-void loop() {
+
+void loop() 
+{
   aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
   if (ble_rx_buffer_len) {//Check if data is available
     SerialMonitorInterface.print(ble_rx_buffer_len);
@@ -182,79 +182,43 @@ void loop() {
       SerialMonitorInterface.println(F("TX dropped!"));
     }
   }  
-checkButtons(); // so that the buttons work <- from smart watch base code
 
-}
-
-
-// Stopwatch Function
-void sWatchFunction() 
-{
-  for (;;) {
-    hh = RTCZ.getHours();
-    mm = RTCZ.getMinutes();
-    ss = RTCZ.getSeconds();
-    int softReset = 0;  // flag for resume button but not hardreset
-    if (softReset == 0) {
-      if (display.getButtons(TSButtonLowerLeft))  // start
-      {
-        RTCZ.setTime(0, 0, 0);
-        RTCZ.begin();
-      }
-      if (display.getButtons(TSButtonLowerRight)) {  // init soft reset
-        softReset == 1;
-        display.setFont(font10pt);
-        display.setCursor(0, menuTextY[3]);
-        display.print("Reset");
-        hh = RTCZ.getHours();
-        mm = RTCZ.getMinutes();
-        ss = RTCZ.getSeconds();
-        break;
-      }
-    } 
-
-    else if (softReset == 1) {
-      if (display.getButtons(TSButtonLowerLeft))  // resume from softreset
-      {
-        softReset = 0;
-        display.setFont(font10pt);
-        display.setCursor(0, menuTextY[3]);
-        display.print("Start");
-        RTCZ.setTime(hh, mm, ss);
-        RTCZ.begin();
-      }
-      if (display.getButtons(TSButtonLowerRight)) {  //hardreset
-        softReset = 0;
-        hh = 0;
-        mm, ss = 0;
-        break;
-      }
-    }
-
-  display.setFont(font22pt);
-  display.setCursor(10, 26);
-  display.print((hh / 10) % 10);
-  display.print(hh % 10);
-  display.print(":");
-  display.print((mm / 10) % 10);
-  display.print(mm % 10);
-  display.print(":");
-  display.print((ss / 10) % 10);
-  display.print(ss % 10);
-  display.setFont(font10pt);
-  display.setCursor(70, menuTextY[3]);
-  display.print("Stop");
-  display.setCursor(0, menuTextY[3]);
-  display.print("Start");
+  if (newtime) {
+    newtime = 0;
+    newTimeData();
   }
+
+  if (displayOn && (millisOffset() > mainDisplayUpdateInterval + lastMainDisplayUpdate)) { // for screen to remain on
+    updateMainDisplay();
+  }
+
+  if (millisOffset() > sleepTimer + ((unsigned long)sleepTimeout * 1000ul)) { //go sleep
+    if (displayOn) {
+      displayOn = 0;
+      display.off();
+    }
+    aci_loop();
+  }
+  checkButtons(); // so that the buttons work <- from smart watch base code
 }
 
-// Timer Function
-void timerFunction()
-{
+void newTimeData() {
+  int y, M, d, k, m, s;
+  y = (TimeData[1] << 8) | TimeData[0];
+  M = TimeData[2];
+  d = TimeData[3];
+  k = TimeData[4];
+  m = TimeData[5];
+  s = TimeData[6];
 
+  RTCZ.setTime(k, m, s);
+  RTCZ.setDate(d, M, y - 2000);
 }
 
+void timeCharUpdate(uint8_t * newData, uint8_t length) {
+  memcpy(TimeData, newData, length);
+  newtime = millisOffset();
+}
 
 int requestScreenOn() {
   sleepTimer = millisOffset();
@@ -266,6 +230,7 @@ int requestScreenOn() {
   }
   return 0;
 }
+
 
 void checkButtons() {
   byte buttons = display.getButtons();

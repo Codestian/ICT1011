@@ -1,7 +1,6 @@
 const uint8_t displayStateHome = 0x01;
 const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
-const uint8_t displayStateStopwatch = 0x04;
 
 uint8_t currentDisplayState = displayStateHome;
 void (*menuHandler)(uint8_t) = NULL;
@@ -33,11 +32,6 @@ void buttonPress(uint8_t buttons) {
       editorHandler(buttons, 0, 0, NULL);
     }
   } 
-  /*else if (currentDisplayState == displayStateStopwatch) {
-    if (menuHandler) {
-      menuHandler(buttons);
-    }
-  }*/
 }
 
 void viewInformation(uint8_t button) 
@@ -47,14 +41,14 @@ void viewInformation(uint8_t button)
   display.setCursor(0, 10);
   display.setFont(font10pt);
   display.print(getGuestName());
-  display.setCursor(0, 22);
-  display.setFont(font10pt);  
+  display.setCursor(0, 22); 
+  display.print("Room ");
+  display.print(getRoomID());
+  display.setCursor(0, 32); 
   display.print("Hotel WIFI");
-  display.setCursor(0, 32);
-  display.setFont(font10pt);  
+  display.setCursor(0, 42); 
   display.print("SSID: H_81_Public");
-  display.setCursor(0, 42);
-  display.setFont(font10pt);  
+  display.setCursor(0, 52); 
   display.print("Pswd: ");
   display.print(generateWIFI());
 
@@ -75,7 +69,41 @@ void viewInformation(uint8_t button)
 
 void initHomeScreen() {
   display.clearWindow(0, 10, 96, 64);
+  rewriteTime = true;
+  rewriteMenu = true;
   updateMainDisplay();
+}
+
+uint8_t lastDisplayedDay = -1;
+uint8_t lastDisplayedMonth = -1;
+uint8_t lastDisplayedYear = -1;
+
+void updateDateDisplay() 
+{
+  int currentDay = RTCZ.getDay();
+  int currentMonth = RTCZ.getMonth();
+  int currentYear = RTCZ.getYear();
+
+  if ((lastDisplayedDay == currentDay) && (lastDisplayedMonth == currentMonth) &&(lastDisplayedYear == currentYear))
+    return;
+ 
+  lastDisplayedDay = currentDay;
+  lastDisplayedMonth = currentMonth;
+  lastDisplayedYear = currentYear;
+  
+  display.setFont(font10pt);
+  display.fontColor(defaultFontColor, defaultFontBG);
+  display.setCursor(2, 2);
+
+  const char * wkday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+  time_t currentTime = RTCZ.getEpoch();
+  struct tm* wkdaycalc = gmtime(&currentTime);
+  display.print(wkday[wkdaycalc->tm_wday]);
+  display.print(' ');
+  display.print(RTCZ.getMonth());
+  display.print('/');
+  display.print(RTCZ.getDay());
+  display.print(F("  "));
 }
 
 void updateMainDisplay() {
@@ -84,18 +112,18 @@ void updateMainDisplay() {
     lastSetBrightness = brightness;
   }
   displayBattery();
+  updateDateDisplay();
   if (currentDisplayState == displayStateHome) {
-      display.setFont(font12pt);
-      display.clearWindow(0, menuTextY[2], 96, 13);
-      int printPos = 13;
-      display.setCursor(printPos*0 + 2, 14);
-      display.print("Hotel Verified");
-      display.setCursor(printPos, 28);
-      display.print("Room ");
-      display.print(getRoomID());
-      
-      display.setFont(font10pt);
-      display.setCursor(0, menuTextY[3]);
+      updateTimeDisplay();
+      if (rewriteMenu)
+      {
+        display.setFont(font10pt);
+        display.clearWindow(0, menuTextY[2], 96, 13);
+        int printPos = 13;
+        display.setCursor(printPos, menuTextY[2]);
+        display.print("Hotel Verified");
+      }
+      display.setCursor(0, menuTextY[3] + 2);
       display.print(F("< Menu          "));
       char viewStr[] = "Info >";
       int Xpos = 95 - display.getPrintWidth(viewStr);
@@ -106,48 +134,78 @@ void updateMainDisplay() {
   lastMainDisplayUpdate = millisOffset();
 }
 
+uint8_t lastAMPMDisplayed = 0;
+uint8_t lastHourDisplayed = -1;
+uint8_t lastMinuteDisplayed = -1;
+uint8_t lastSecondDisplayed = -1;
+
+void updateTimeDisplay() {
+  int currentHour, currentMinute, currentSecond;
+
+  currentHour = RTCZ.getHours();
+  currentMinute = RTCZ.getMinutes();
+  currentSecond = RTCZ.getSeconds();
+
+  if (currentDisplayState != displayStateHome)
+    return;
+
+  char displayX;
+  int hour12 = currentHour;
+  int AMPM = 1;
+  if (hour12 > 12) {
+    AMPM = 2;
+    hour12 -= 12;
+  }
+  display.fontColor(defaultFontColor, defaultFontBG);
+  if (rewriteTime || lastHourDisplayed != hour12) {
+    display.setFont(font22pt);
+    lastHourDisplayed = hour12;
+    displayX = 0;
+    display.setCursor(displayX, timeY);
+    if (lastHourDisplayed < 10)display.print('0');
+    display.print(lastHourDisplayed);
+    display.write(':');
+    if (lastAMPMDisplayed != AMPM) {
+      if (AMPM == 2)
+        display.fontColor(inactiveFontColor, inactiveFontBG);
+      display.setFont(font10pt);
+      display.setCursor(displayX + 80, timeY - 0);
+      display.print(F("AM"));
+      if (AMPM == 2) {
+        display.fontColor(defaultFontColor, defaultFontBG);
+      } else {
+        display.fontColor(inactiveFontColor, inactiveFontBG);
+      }
+      display.setCursor(displayX + 80, timeY + 11);
+      display.print(F("PM"));
+      display.fontColor(defaultFontColor, defaultFontBG);
+    }
+  }
+
+  if (rewriteTime || lastMinuteDisplayed != currentMinute) {
+    display.setFont(font22pt);
+    lastMinuteDisplayed = currentMinute;
+    displayX = 14 + 14 - 1;
+    display.setCursor(displayX, timeY);
+    if (lastMinuteDisplayed < 10)display.print('0');
+    display.print(lastMinuteDisplayed);
+    display.write(':');
+  }
+
+  if (rewriteTime || lastSecondDisplayed != currentSecond) {
+    display.setFont(font22pt);
+    lastSecondDisplayed = currentSecond;
+    displayX = 14 + 14 + 14 + 14 - 2;
+    display.setCursor(displayX, timeY);
+    if (lastSecondDisplayed < 10)display.print('0');
+    display.print(lastSecondDisplayed);
+  }
+  rewriteTime = false;
+}
+
 void displayBattery() {
   int result = 0;
-#if defined (ARDUINO_ARCH_AVR)
-  //http://forum.arduino.cc/index.php?topic=133907.0
-  const long InternalReferenceVoltage = 1100L;
-  ADMUX = (0 << REFS1) | (1 << REFS0) | (0 << ADLAR) | (1 << MUX3) | (1 << MUX2) | (1 << MUX1) | (0 << MUX0);
-  delay(10);
-  ADCSRA |= _BV( ADSC );
-  while ( ( (ADCSRA & (1 << ADSC)) != 0 ) );
-  result = (((InternalReferenceVoltage * 1024L) / ADC) + 5L) / 10L;
-  //SerialMonitorInterface.println(result);
-  //if(result>440){//probably charging
-  uint8_t charging = false;
-  if (result > 450) {
-    charging = true;
-  }
-  result = constrain(result - 300, 0, 120);
-  uint8_t x = 70;
-  uint8_t y = 3;
-  uint8_t height = 5;
-  uint8_t length = 20;
-  uint8_t amtActive = (result * length) / 120;
-  uint8_t red, green, blue;
-  display.drawLine(x - 1, y, x - 1, y + height, 0xFF); //left boarder
-  display.drawLine(x - 1, y - 1, x + length, y - 1, 0xFF); //top border
-  display.drawLine(x - 1, y + height + 1, x + length, y + height + 1, 0xFF); //bottom border
-  display.drawLine(x + length, y - 1, x + length, y + height + 1, 0xFF); //right border
-  display.drawLine(x + length + 1, y + 2, x + length + 1, y + height - 2, 0xFF); //right border
-  for (uint8_t i = 0; i < length; i++) {
-    if (i < amtActive) {
-      red = 63 - ((63 / length) * i);
-      green = ((63 / length) * i);
-      blue = 0;
-    } else {
-      red = 32;
-      green = 32;
-      blue = 32;
-    }
-    display.drawLine(x + i, y, x + i, y + height, red, green, blue);
-  }
-#elif defined(ARDUINO_ARCH_SAMD)
-  //http://atmel.force.com/support/articles/en_US/FAQ/ADC-example
+
   SYSCTRL->VREF.reg |= SYSCTRL_VREF_BGOUTEN;
   while (ADC->STATUS.bit.SYNCBUSY == 1);
   ADC->SAMPCTRL.bit.SAMPLEN = 0x1;
@@ -171,10 +229,10 @@ void displayBattery() {
   while (ADC->STATUS.bit.SYNCBUSY == 1);
   SYSCTRL->VREF.reg &= ~SYSCTRL_VREF_BGOUTEN;
   result = (((1100L * 1024L) / valueRead) + 5L) / 10L;
-  uint8_t x = 33;
+  uint8_t x = 70;
   uint8_t y = 3;
   uint8_t height = 5;
-  uint8_t length = 30;
+  uint8_t length = 20;
   uint8_t red, green;
   if (result > 325) {
     red = 0;
@@ -191,5 +249,4 @@ void displayBattery() {
   for (uint8_t i = 0; i < length; i++) {
     display.drawLine(x + i, y, x + i, y + height, red, green, 0);
   }
-#endif
 }

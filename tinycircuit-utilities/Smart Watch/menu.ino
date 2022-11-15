@@ -43,28 +43,52 @@ void newMenu(int8_t newIndex) {
   }
 }
 
-static const char PROGMEM mainMenuStrings0[] = "Set auto off";
-static const char PROGMEM mainMenuStrings1[] = "Set brightness";
-static const char PROGMEM mainMenuStrings2[] = "Timer";
-static const char PROGMEM mainMenuStrings3[] = "Stopwatch";
+static const char PROGMEM mainMenuStrings0[] = "Set date/time";
+static const char PROGMEM mainMenuStrings1[] = "Set auto off";
+static const char PROGMEM mainMenuStrings2[] = "Set brightness";
 
 static const char* const PROGMEM mainMenuStrings[] =
 {
   mainMenuStrings0,
   mainMenuStrings1,
   mainMenuStrings2,
-  mainMenuStrings3,
 };
 
 const menu_info mainMenuInfo =
 {
-  4,
+  3,
   mainMenuStrings,
   mainMenu,
 };
 
-const menu_info menuList[] = {mainMenuInfo};
+
+static const char PROGMEM dateTimeMenuStrings0[] = "Set Year";
+static const char PROGMEM dateTimeMenuStrings1[] = "Set Month";
+static const char PROGMEM dateTimeMenuStrings2[] = "Set Day";
+static const char PROGMEM dateTimeMenuStrings3[] = "Set Hour";
+static const char PROGMEM dateTimeMenuStrings4[] = "Set Minute";
+static const char PROGMEM dateTimeMenuStrings5[] = "Set Second";
+
+static const char* const PROGMEM dateTimeMenuStrings[] =
+{
+  dateTimeMenuStrings0,
+  dateTimeMenuStrings1,
+  dateTimeMenuStrings2,
+  dateTimeMenuStrings3,
+  dateTimeMenuStrings4,
+  dateTimeMenuStrings5,
+};
+
+const menu_info dateTimeMenuInfo =
+{
+  6,
+  dateTimeMenuStrings,
+  dateTimeMenu,
+};
+
+const menu_info menuList[] = {mainMenuInfo, dateTimeMenuInfo};
 #define mainMenuIndex 0
+#define dateTimeMenuIndex 1
 
 int currentVal = 0;
 int digits[4];
@@ -72,88 +96,6 @@ int currentDigit = 0;
 int maxDigit = 4;
 int *originalVal;
 void (*editIntCallBack)() = NULL;
-
-uint8_t timeMenu(uint8_t button)
-{
-    //currentDisplayState = displayStateStopwatch;
-    display.clearWindow(0, 10, 96, 64);
-    display.setFont(font10pt);
-    display.fontColor(defaultFontColor, defaultFontBG);
-    display.setCursor(0, menuTextY[0]);
-    display.print(F("< back"));
-
-  if (button == backButton) 
-  { 
-    currentDisplayState = displayStateHome;
-    initHomeScreen();
-  }
-}
-
-uint8_t editTimer(uint8_t button, int *inVal, char *intName, void (*cb)()) {
-  if (menu_debug_print)SerialMonitorInterface.println("editInt");
-  if (!button) {
-    if (menu_debug_print)SerialMonitorInterface.println("editIntInit");
-    editIntCallBack = cb;
-    currentDisplayState = displayStateEditor;
-    editorHandler = editInt;
-    currentDigit = 0;
-    originalVal = inVal;
-    currentVal = *originalVal;
-    digits[3] = currentVal % 10; currentVal /= 10;
-    digits[2] = currentVal % 10; currentVal /= 10;
-    digits[1] = currentVal % 10; currentVal /= 10;
-    digits[0] = currentVal % 10;
-    currentVal = *originalVal;
-    display.clearWindow(0, 10, 96, 64);
-    display.setFont(font10pt);
-    display.fontColor(defaultFontColor, defaultFontBG);
-    display.setCursor(0, menuTextY[0]);
-    display.print(F("< back/undo"));
-    display.setCursor(90, menuTextY[0]);
-    display.print('^');
-    display.setCursor(0, menuTextY[3]);
-    display.print(F("< next/save"));
-    display.setCursor(90, menuTextY[3]);
-    display.print('v');
-  } else if (button == upButton) {
-    if (digits[currentDigit] < 9)
-      digits[currentDigit]++;
-  } else if (button == downButton) {
-    if (digits[currentDigit] > 0)
-      digits[currentDigit]--;
-  } else if (button == selectButton) {
-    if (currentDigit < maxDigit - 1) {
-      currentDigit++;
-    } else {
-      //save
-      int newValue = (digits[3]) + (digits[2] * 10) + (digits[1] * 100) + (digits[0] * 1000);
-      *originalVal = newValue;
-      viewMenu(backButton);
-      if (editIntCallBack) {
-        editIntCallBack();
-        editIntCallBack = NULL;
-      }
-      return 1;
-    }
-  } else if (button == backButton) {
-    if (currentDigit > 0) {
-      currentDigit--;
-    } else {
-      if (menu_debug_print)SerialMonitorInterface.println(F("back"));
-      viewMenu(backButton);
-      return 0;
-    }
-  }
-  display.setCursor(10, menuTextY[1]);
-  //display.setFont(font22pt);
-  for (uint8_t i = 0; i < 4; i++) {
-    if (i != currentDigit)display.fontColor(inactiveFontColor, defaultFontBG);
-    display.print(digits[i]);
-    if (i != currentDigit)display.fontColor(defaultFontColor, defaultFontBG);
-  }
-  display.print(F("   "));
-  return 0;
-}
 
 uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
   if (menu_debug_print)SerialMonitorInterface.println("editInt");
@@ -223,24 +165,55 @@ uint8_t editInt(uint8_t button, int *inVal, char *intName, void (*cb)()) {
 }
 
 void mainMenu(uint8_t selection) {
+  if (menu_debug_print)SerialMonitorInterface.println("mainMenuHandler");
   if (selection == 0) {
-    char buffer[20];
-    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
-    editInt(0, &sleepTimeout, buffer, NULL);
+    newMenu(dateTimeMenuIndex);
   }
   if (selection == 1) {
     char buffer[20];
     strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
-    editInt(0, &brightness, buffer, NULL);
+    editInt(0, &sleepTimeout, buffer, NULL);
   }
   if (selection == 2) {
     char buffer[20];
-    //strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
-    editTimer(0, &timerMM, buffer, NULL);
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[mainMenuIndex].strings[selection])));
+    editInt(0, &brightness, buffer, NULL);
   }
-  if (selection == 3) {
-    timeMenu(0);
-    sWatchFunction();
+}
+
+uint8_t dateTimeSelection = 0;
+int dateTimeVariable = 0;
+
+void saveChangeCallback() {
+#if defined (ARDUINO_ARCH_AVR)
+  int timeData[] = {year(), month(), day(), hour(), minute(), second()};
+  timeData[dateTimeSelection] = dateTimeVariable;
+  setTime(timeData[3], timeData[4], timeData[5], timeData[2], timeData[1], timeData[0]);
+#elif defined(ARDUINO_ARCH_SAMD)
+  int timeData[] = {RTCZ.getYear(), RTCZ.getMonth(), RTCZ.getDay(), RTCZ.getHours(), RTCZ.getMinutes(), RTCZ.getSeconds()};
+  timeData[dateTimeSelection] = dateTimeVariable;
+  RTCZ.setTime(timeData[3], timeData[4], timeData[5]);
+  RTCZ.setDate(timeData[2], timeData[1], timeData[0] - 2000);
+#endif
+  if (menu_debug_print)SerialMonitorInterface.print("set time ");
+  if (menu_debug_print)SerialMonitorInterface.println(dateTimeVariable);
+}
+
+
+void dateTimeMenu(uint8_t selection) {
+  if (menu_debug_print)SerialMonitorInterface.print("dateTimeMenu ");
+  if (menu_debug_print)SerialMonitorInterface.println(selection);
+  if (selection >= 0 && selection < 6) {
+#if defined (ARDUINO_ARCH_AVR)
+    int timeData[] = {year(), month(), day(), hour(), minute(), second()};
+#elif defined(ARDUINO_ARCH_SAMD)
+    int timeData[] = {RTCZ.getYear(), RTCZ.getMonth(), RTCZ.getDay(), RTCZ.getHours(), RTCZ.getMinutes(), RTCZ.getSeconds()};
+#endif
+    dateTimeVariable = timeData[selection];
+    dateTimeSelection = selection;
+    char buffer[20];
+    strcpy_P(buffer, (PGM_P)pgm_read_word(&(menuList[dateTimeMenuIndex].strings[selection])));
+    editInt(0, &dateTimeVariable, buffer, saveChangeCallback);
   }
 }
 
