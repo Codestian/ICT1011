@@ -1,0 +1,110 @@
+/* Resets CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: 1rem;
+    font-weight: inherit;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: black;
+}
+
+.container {
+    width: 320px;
+    height: 480px;
+}
+
+.content {
+    width: 100%;
+    height: 100%;
+    background: black;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon {
+    padding-bottom: 148px;
+    font-size: 10rem;
+}
+
+.level {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    top: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.level span {
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.8rem;
+}
+
+.status-container {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.status {
+    width: 100%;
+    height: 64px;
+    background: rgba(0, 0, 0, 0.15);
+    bottom: 84px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-size: 1.2rem;
+}
+
+.doorbell {
+    width: 100%;
+    height: 84px;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+}
+
+.doorbell button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.mode {
+    display: none;
+}

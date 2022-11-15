@@ -1,0 +1,2 @@
+Bluetooth address of sample TinyCircuit:
+c6:a5:27:1f:ce:dc
