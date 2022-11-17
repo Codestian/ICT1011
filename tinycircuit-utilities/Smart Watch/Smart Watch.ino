@@ -134,6 +134,7 @@ const char * getRoomID()
 
     delay(100);
     }
+  HotelNum = "369";
   return HotelNum;
 }
 
@@ -155,7 +156,7 @@ const char * generateWIFI(){
 void loop() 
 {
   aci_loop();//Process any ACI commands or events from the NRF8001- main BLE handler, must run often. Keep main loop short.
-  if (ble_rx_buffer_len) {//Check if data is available
+  /*if (ble_rx_buffer_len) {//Check if data is available
     SerialMonitorInterface.print(ble_rx_buffer_len);
     SerialMonitorInterface.print(" : ");
     SerialMonitorInterface.println((char*)ble_rx_buffer);
@@ -181,7 +182,7 @@ void loop()
     {
       SerialMonitorInterface.println(F("TX dropped!"));
     }
-  }  
+  }  */
 
   if (newtime) {
     newtime = 0;

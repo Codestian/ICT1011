@@ -18,6 +18,8 @@
 #include <TinyScreen.h>
 #include <STBLE.h>
 #include "BLEtypes.h"
+#include <RTCZero.h>
+#include <time.h>
 
 #define BLE_DEBUG true
 #define menu_debug_print true
@@ -35,8 +37,6 @@ TinyScreen display = TinyScreen(TinyScreenDefault);
 #elif defined(ARDUINO_ARCH_SAMD)
 TinyScreen display = TinyScreen(TinyScreenDefault);
 #define SerialMonitorInterface SerialUSB
-#include <RTCZero.h>
-#include <time.h>
 RTCZero RTCZ;
 uint32_t startTime = 0;
 uint32_t sleepTime = 0;
@@ -203,9 +203,9 @@ void setup(void)
   pinMode(45, INPUT_PULLUP);
   pinMode(A4, INPUT);
   pinMode(2, INPUT);*/
-  //RTCZ.begin();
-  //RTCZ.setTime(0, 0, 0);//h,m,s
-  //RTCZ.setDate(25, 7, 16);//d,m,y
+  RTCZ.begin();
+  RTCZ.setTime(0, 0, 0);//h,m,s
+  RTCZ.setDate(25, 7, 16);//d,m,y
   //RTCZ.attachInterrupt(RTCwakeHandler);
   //RTCZ.enableAlarm(RTCZ.MATCH_HHMMSS);
   //RTCZ.setAlarmEpoch(RTCZ.getEpoch() + 1);
