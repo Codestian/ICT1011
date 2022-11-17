@@ -13,19 +13,30 @@ tiny_key_addr = "c6:a5:27:1f:ce:dc"
 
 def scanForDevices():
     global result
+    idx = 0
+    check = [0,0,0,0,0,0,0,0,0,0]
     print("Scanning for TinyKey...")
     while True:
         try:
             # Scans every 500 milliseconds
-            ble_list = Scanner().scan(0.5)
+            ble_list = Scanner().scan(0.25)
             for dev in ble_list:
                 if dev.addr == tiny_key_addr:
-                    if(dev.rssi >= -70):
-                        print("Device near:" + str(dev.rssi))
-                        outputJson(1)
+                    if(idx == 10):
+                        if(sum(check) >= 6):
+                            print("DEVICE NEAR " + str(check))
+                            outputJson(1)
+                        else:
+                            print("DEVICE FAR " + str(check))
+                            outputJson(0)
+                        idx = 0
                     else:
-                        print("Device far:" + str(dev.rssi))
-                        outputJson(0)
+                        if(dev.rssi >= -70):
+                            check[idx] = 1
+                        else:
+                            check[idx] = 0
+                        print(str(idx) + ": DISTANCE: " + str(dev.rssi))
+                        idx = idx + 1
         except:
             raise Exception("Error occured")
 
