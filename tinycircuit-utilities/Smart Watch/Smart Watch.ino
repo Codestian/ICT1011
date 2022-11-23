@@ -3,6 +3,9 @@
 // This is just the key for the hotel guests and employees.
 // This code allows the watch to display time,date and day set by RTC.
 // It also fetches the Guest Name and their respective room ID from the backend strapi server.
+// Code is refenced from STBLE sample code and TinyCircuit Smart Watch.
+// Only certain functions from TinyCiruict Smart Watch code are used.
+// A password generator function is created which shows the password generated in the information menu.
 //-------------------------------------------------------------------------------
 
 
