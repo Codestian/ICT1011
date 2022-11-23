@@ -10,8 +10,14 @@ Starting Up.
 Step 2.0: Ensure you have Nodejs installed in your system. [ cd/hotel-backend
 npm install]
 
-Step 2.1: Run your backend Strapi Server!! ---> [ cd/hotel-backend 
+Step 2.1: From hotel-backend, move the data.db file to the .tmp file which is hidden in hotel-backend.
+
+Step 2.2: Run your backend Strapi Server!! ---> [ cd/hotel-backend 
 npm run develop ]
+
+Step 2.3: When running the backend, if issues are encountered during registration for Strapi. Here is the Super Admin credentials.
+Email: admin@email.com
+Password: Password1
 
 Step 3: Make sure your Strapi Sever has rooms Vacant! --> [ Go to http://localhost:1337/admin/content-manager/collectionType/api::room.room?page=1&pageSize=10&sort=id:ASC ]
 
