@@ -1,3 +1,8 @@
+//-------------------------------------------------------------------------------
+// This File configures the display of the Tinycircuit.
+//-------------------------------------------------------------------------------
+
+
 const uint8_t displayStateHome = 0x01;
 const uint8_t displayStateMenu = 0x02;
 const uint8_t displayStateEditor = 0x03;
