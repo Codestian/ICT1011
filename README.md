@@ -7,7 +7,11 @@ Setting Up.
 Step 1: Go to Reception\main.py and change the COM Port on Line 120, to your individual COM Port number.
 
 Starting Up.
-Step 2: Run your backend Strapi Server!! ---> [ cd/hotel-backend npm run develop ]
+Step 2.0: Ensure you have Nodejs installed in your system. [ cd/hotel-backend
+npm install]
+
+Step 2.1: Run your backend Strapi Server!! ---> [ cd/hotel-backend 
+npm run develop ]
 
 Step 3: Make sure your Strapi Sever has rooms Vacant! --> [ Go to http://localhost:1337/admin/content-manager/collectionType/api::room.room?page=1&pageSize=10&sort=id:ASC ]
 
