@@ -137,7 +137,6 @@ const char * getRoomID()
 
     delay(100);
     }
-  HotelNum = "369";
   return HotelNum;
 }
 
