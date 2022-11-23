@@ -13,7 +13,7 @@ Step 3: Make sure your Strapi Sever has rooms Vacant! --> [ Go to http://localho
 
 Step 4: Upload Smart watch base.ino onto your Tinycircuit!
 
-Step 5: Run the frontend! ---> [ cd/Reception flask -A main --debug run ]
+Step 5: Run the frontend! ---> [ cd/reception-gui flask -A main --debug run ]
 
 Step 6: Have a nice Hotel Stay! :D
 
