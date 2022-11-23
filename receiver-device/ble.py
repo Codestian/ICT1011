@@ -10,20 +10,21 @@ import time
 import json
 from bluepy.btle import Scanner
 
-list_of_addr  = ["c6:a5:27:1f:ce:dc","e5:de:83:e7:0f:9d"]
+list_of_addr  = ["c6:a5:27:1f:ce:dc","e5:de:83:e7:0f:9d", "ce:08:66:d5:a3:de"]
 
 
 """
 Grace period for access granted is more than access denied
 """
-GRACE_PERIOD_DENIED = 5
-GRACE_PERIOD_GRANTED = 20
+GRACE_PERIOD_DENIED = 2
+GRACE_PERIOD_GRANTED = 5
 
 def scanForDevices():
 
     access = {
         "c6:a5:27:1f:ce:dc": 1,
-        "e5:de:83:e7:0f:9d": 0
+        "e5:de:83:e7:0f:9d": 0,
+        "ce:08:66:d5:a3:de": 1
     }
     addr_in_range = []
 
@@ -47,7 +48,7 @@ def scanForDevices():
                     scan_for_key = False
                     time.sleep(GRACE_PERIOD_DENIED)
                     scan_for_key = True
-                elif(sum(addr_in_range) == 1):
+                elif(sum(addr_in_range) >= 1):
                     outputJson(1)
                     scan_for_key = False
                     time.sleep(GRACE_PERIOD_GRANTED)
