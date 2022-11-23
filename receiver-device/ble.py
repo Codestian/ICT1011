@@ -12,6 +12,10 @@ from bluepy.btle import Scanner
 
 list_of_addr  = ["c6:a5:27:1f:ce:dc","e5:de:83:e7:0f:9d"]
 
+
+"""
+Grace period for access granted is more than access denied
+"""
 GRACE_PERIOD_DENIED = 5
 GRACE_PERIOD_GRANTED = 20
 
